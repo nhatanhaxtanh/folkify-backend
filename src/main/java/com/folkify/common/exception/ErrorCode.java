@@ -11,6 +11,7 @@ public enum ErrorCode {
     INVALID_CREDENTIALS(1002, "Email hoặc mật khẩu không đúng", HttpStatus.UNAUTHORIZED),
     INVALID_REFRESH_TOKEN(1003, "Refresh token không hợp lệ", HttpStatus.UNAUTHORIZED),
     REFRESH_TOKEN_EXPIRED(1004, "Refresh token đã hết hạn hoặc bị thu hồi", HttpStatus.UNAUTHORIZED),
+    GOOGLE_AUTH_FAILED(1005, "Xác thực Google thất bại, vui lòng thử lại", HttpStatus.UNAUTHORIZED),
 
     // Instrument (1100 - 1199)
     INSTRUMENT_NOT_FOUND(1100, "Không tìm thấy nhạc cụ", HttpStatus.NOT_FOUND),

@@ -41,6 +41,12 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponse.success(authService.refreshToken(request)));
     }
 
+    @PostMapping("/google")
+    @Operation(summary = "Đăng nhập bằng Google")
+    public ResponseEntity<ApiResponse<AuthResponse>> loginWithGoogle(@Valid @RequestBody GoogleAuthRequest request) {
+        return ResponseEntity.ok(ApiResponse.success("Đăng nhập Google thành công", authService.loginWithGoogle(request)));
+    }
+
     @PostMapping("/logout")
     @Operation(summary = "Đăng xuất")
     public ResponseEntity<ApiResponse<Void>> logout(@Valid @RequestBody LogoutRequest request) {

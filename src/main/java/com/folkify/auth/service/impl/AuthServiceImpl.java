@@ -16,6 +16,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestClient;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -30,6 +31,7 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final long refreshTokenExpiration;
+    private final RestClient restClient = RestClient.create();
 
     public AuthServiceImpl(
             UserRepository userRepository,
@@ -74,6 +76,38 @@ public class AuthServiceImpl implements AuthService {
         }
         User user = userRepository.findByEmail(request.email())
                 .orElseThrow(() -> new ApiException(ErrorCode.INVALID_CREDENTIALS));
+        return buildAuthResponse(user);
+    }
+
+    @Override
+    @Transactional
+    public AuthResponse loginWithGoogle(GoogleAuthRequest request) {
+        GoogleTokenInfo tokenInfo;
+        try {
+            tokenInfo = restClient.get()
+                    .uri("https://oauth2.googleapis.com/tokeninfo?id_token={token}", request.idToken())
+                    .retrieve()
+                    .body(GoogleTokenInfo.class);
+        } catch (Exception e) {
+            throw new ApiException(ErrorCode.GOOGLE_AUTH_FAILED);
+        }
+
+        if (tokenInfo == null || !"true".equals(tokenInfo.emailVerified())) {
+            throw new ApiException(ErrorCode.GOOGLE_AUTH_FAILED);
+        }
+
+        User user = userRepository.findByEmail(tokenInfo.email())
+                .orElseGet(() -> {
+                    String name = tokenInfo.name() != null
+                            ? tokenInfo.name()
+                            : tokenInfo.email().split("@")[0];
+                    return userRepository.save(User.builder()
+                            .name(name)
+                            .email(tokenInfo.email())
+                            .password(passwordEncoder.encode(UUID.randomUUID().toString()))
+                            .build());
+                });
+
         return buildAuthResponse(user);
     }
 
