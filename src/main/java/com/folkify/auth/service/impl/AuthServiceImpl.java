@@ -1,11 +1,14 @@
 package com.folkify.auth.service.impl;
 
 import com.folkify.auth.dto.*;
+import com.folkify.auth.entity.PasswordResetToken;
 import com.folkify.auth.entity.RefreshToken;
 import com.folkify.auth.entity.User;
+import com.folkify.auth.repository.PasswordResetTokenRepository;
 import com.folkify.auth.repository.RefreshTokenRepository;
 import com.folkify.auth.repository.UserRepository;
 import com.folkify.auth.service.AuthService;
+import com.folkify.auth.service.EmailService;
 import com.folkify.auth.service.JwtService;
 import com.folkify.common.exception.ApiException;
 import com.folkify.common.exception.ErrorCode;
@@ -27,26 +30,35 @@ public class AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
+    private final EmailService emailService;
     private final long refreshTokenExpiration;
+    private final long resetPasswordExpiration;
     private final RestClient restClient = RestClient.create();
 
     public AuthServiceImpl(
             UserRepository userRepository,
             RefreshTokenRepository refreshTokenRepository,
+            PasswordResetTokenRepository passwordResetTokenRepository,
             JwtService jwtService,
             PasswordEncoder passwordEncoder,
             AuthenticationManager authenticationManager,
-            @Value("${app.jwt.refresh-token-expiration}") long refreshTokenExpiration
+            EmailService emailService,
+            @Value("${app.jwt.refresh-token-expiration}") long refreshTokenExpiration,
+            @Value("${app.reset-password.expiration}") long resetPasswordExpiration
     ) {
         this.userRepository = userRepository;
         this.refreshTokenRepository = refreshTokenRepository;
+        this.passwordResetTokenRepository = passwordResetTokenRepository;
         this.jwtService = jwtService;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
+        this.emailService = emailService;
         this.refreshTokenExpiration = refreshTokenExpiration;
+        this.resetPasswordExpiration = resetPasswordExpiration;
     }
 
     @Override
@@ -134,6 +146,45 @@ public class AuthServiceImpl implements AuthService {
             token.setRevoked(true);
             refreshTokenRepository.save(token);
         });
+    }
+
+    @Override
+    @Transactional
+    public void forgotPassword(ForgotPasswordRequest request) {
+        userRepository.findByEmail(request.email()).ifPresent(user -> {
+            passwordResetTokenRepository.deleteAllByUser(user);
+            String rawToken = UUID.randomUUID().toString();
+            PasswordResetToken resetToken = PasswordResetToken.builder()
+                    .token(rawToken)
+                    .user(user)
+                    .expiresAt(LocalDateTime.now().plusSeconds(resetPasswordExpiration / 1000))
+                    .build();
+            passwordResetTokenRepository.save(resetToken);
+            emailService.sendPasswordResetEmail(user.getEmail(), rawToken);
+        });
+    }
+
+    @Override
+    @Transactional
+    public void resetPassword(ResetPasswordRequest request) {
+        PasswordResetToken resetToken = passwordResetTokenRepository.findByToken(request.token())
+                .orElseThrow(() -> new ApiException(ErrorCode.INVALID_RESET_TOKEN));
+
+        if (resetToken.isUsed()) {
+            throw new ApiException(ErrorCode.INVALID_RESET_TOKEN);
+        }
+        if (resetToken.isExpired()) {
+            throw new ApiException(ErrorCode.RESET_TOKEN_EXPIRED);
+        }
+
+        User user = resetToken.getUser();
+        user.setPassword(passwordEncoder.encode(request.newPassword()));
+        userRepository.save(user);
+
+        resetToken.setUsed(true);
+        passwordResetTokenRepository.save(resetToken);
+
+        refreshTokenRepository.deleteAllByUser(user);
     }
 
     private AuthResponse buildAuthResponse(User user) {

@@ -1,10 +1,6 @@
 package com.folkify.auth.service;
 
-import com.folkify.auth.dto.AuthResponse;
-import com.folkify.auth.dto.GoogleAuthRequest;
-import com.folkify.auth.dto.LoginRequest;
-import com.folkify.auth.dto.RefreshTokenRequest;
-import com.folkify.auth.dto.RegisterRequest;
+import com.folkify.auth.dto.*;
 
 public interface AuthService {
     AuthResponse register(RegisterRequest request);
@@ -12,4 +8,6 @@ public interface AuthService {
     AuthResponse loginWithGoogle(GoogleAuthRequest request);
     AuthResponse refreshToken(RefreshTokenRequest request);
     void logout(String refreshToken);
+    void forgotPassword(ForgotPasswordRequest request);
+    void resetPassword(ResetPasswordRequest request);
 }

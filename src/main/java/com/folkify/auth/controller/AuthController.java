@@ -53,4 +53,18 @@ public class AuthController {
         authService.logout(request.refreshToken());
         return ResponseEntity.ok(ApiResponse.success("Đăng xuất thành công", null));
     }
+
+    @PostMapping("/forgot-password")
+    @Operation(summary = "Yêu cầu đặt lại mật khẩu")
+    public ResponseEntity<ApiResponse<Void>> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+        authService.forgotPassword(request);
+        return ResponseEntity.ok(ApiResponse.success("Nếu email tồn tại, hướng dẫn đặt lại mật khẩu đã được gửi", null));
+    }
+
+    @PostMapping("/reset-password")
+    @Operation(summary = "Đặt lại mật khẩu bằng token")
+    public ResponseEntity<ApiResponse<Void>> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        authService.resetPassword(request);
+        return ResponseEntity.ok(ApiResponse.success("Đặt lại mật khẩu thành công", null));
+    }
 }
