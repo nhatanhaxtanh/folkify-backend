@@ -28,7 +28,8 @@ public class EmailServiceImpl implements EmailService {
     @Override
     public void sendPasswordResetEmail(String to, String resetToken) {
         String resetLink = baseUrl + "/api/auth/reset-password/open?token=" + resetToken;
-        String html = buildResetEmailHtml(resetLink);
+        String logoUrl = baseUrl + "/images/logo.png";
+        String html = buildResetEmailHtml(resetLink, logoUrl);
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
@@ -42,7 +43,7 @@ public class EmailServiceImpl implements EmailService {
         }
     }
 
-    private String buildResetEmailHtml(String resetLink) {
+    private String buildResetEmailHtml(String resetLink, String logoUrl) {
         return "<!DOCTYPE html>" +
                "<html lang=\"vi\" xmlns=\"http://www.w3.org/1999/xhtml\">" +
                "<head>" +
@@ -58,9 +59,16 @@ public class EmailServiceImpl implements EmailService {
                // Header
                "<tr>" +
                "<td align=\"center\" bgcolor=\"#1a5c2e\" style=\"background-color:#1a5c2e;padding:28px 40px;border-radius:16px 16px 0 0;\">" +
-               "<span style=\"font-family:Georgia,serif;font-size:30px;font-weight:900;color:#ffffff;letter-spacing:1px;\">&#9835; Folkify</span>" +
+               "<table cellpadding=\"0\" cellspacing=\"0\" border=\"0\"><tr>" +
+               "<td valign=\"middle\" style=\"padding-right:14px;\">" +
+               "<img src=\"" + logoUrl + "\" width=\"52\" height=\"52\" alt=\"Folkify\" style=\"display:block;border-radius:12px;\"/>" +
+               "</td>" +
+               "<td valign=\"middle\" align=\"left\">" +
+               "<span style=\"font-family:Georgia,serif;font-size:26px;font-weight:900;color:#ffffff;letter-spacing:0.5px;\">Folkify</span>" +
                "<br/>" +
-               "<span style=\"font-family:Arial,sans-serif;font-size:12px;color:#a7d4b0;letter-spacing:0.5px;\">H&#7885;c nh&#7841;c c&#7909; d&#226;n t&#7897;c Vi&#7879;t Nam</span>" +
+               "<span style=\"font-family:Arial,sans-serif;font-size:12px;color:#a7d4b0;\">H&#7885;c nh&#7841;c c&#7909; d&#226;n t&#7897;c Vi&#7879;t Nam</span>" +
+               "</td>" +
+               "</tr></table>" +
                "</td>" +
                "</tr>" +
 
