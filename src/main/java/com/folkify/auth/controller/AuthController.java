@@ -6,7 +6,9 @@ import com.folkify.common.response.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,9 +18,14 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AuthService authService;
+    private final String deepLinkBaseUrl;
 
-    public AuthController(AuthService authService) {
+    public AuthController(
+            AuthService authService,
+            @Value("${app.deep-link.base-url}") String deepLinkBaseUrl
+    ) {
         this.authService = authService;
+        this.deepLinkBaseUrl = deepLinkBaseUrl;
     }
 
     @PostMapping("/register")
@@ -52,6 +59,53 @@ public class AuthController {
     public ResponseEntity<ApiResponse<Void>> logout(@Valid @RequestBody LogoutRequest request) {
         authService.logout(request.refreshToken());
         return ResponseEntity.ok(ApiResponse.success("Đăng xuất thành công", null));
+    }
+
+    @GetMapping(value = "/reset-password/open", produces = MediaType.TEXT_HTML_VALUE)
+    @Operation(summary = "Mở app đặt lại mật khẩu qua deep link")
+    public ResponseEntity<String> openResetPassword(@RequestParam String token) {
+        String deepLink = deepLinkBaseUrl + "?token=" + token;
+        String html = """
+                <!DOCTYPE html>
+                <html lang="vi">
+                <head>
+                  <meta charset="UTF-8">
+                  <meta name="viewport" content="width=device-width, initial-scale=1">
+                  <title>Folkify</title>
+                  <style>
+                    * { margin: 0; padding: 0; box-sizing: border-box; }
+                    body { background: #0f0f1a; color: #fff; font-family: 'Segoe UI', Arial, sans-serif;
+                           display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+                    .card { background: #1a1a2e; border-radius: 20px; padding: 40px 32px;
+                            text-align: center; max-width: 360px; width: 90%%; border: 1px solid #2a2a4a; }
+                    .logo { color: #D97706; font-size: 26px; font-weight: 900; margin-bottom: 24px; }
+                    .icon { font-size: 48px; margin-bottom: 16px; }
+                    h2 { font-size: 20px; margin-bottom: 10px; }
+                    p { color: #aaaacc; font-size: 14px; line-height: 1.6; margin-bottom: 28px; }
+                    .btn { display: inline-block; background: #D97706; color: #fff; text-decoration: none;
+                           padding: 14px 32px; border-radius: 12px; font-weight: 700; font-size: 15px; }
+                  </style>
+                  <script>
+                    window.onload = function() {
+                      window.location.href = '%s';
+                      setTimeout(function() {
+                        document.getElementById('fallback').style.display = 'block';
+                      }, 2000);
+                    };
+                  </script>
+                </head>
+                <body>
+                  <div class="card">
+                    <div class="logo">&#9835; Folkify</div>
+                    <div class="icon">&#128274;</div>
+                    <h2>Đang mở ứng dụng...</h2>
+                    <p>Vui lòng chờ trong giây lát.</p>
+                    <a id="fallback" href="%s" class="btn" style="display:none;">Mở Folkify</a>
+                  </div>
+                </body>
+                </html>
+                """.formatted(deepLink, deepLink);
+        return ResponseEntity.ok(html);
     }
 
     @PostMapping("/forgot-password")

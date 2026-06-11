@@ -13,21 +13,21 @@ public class EmailServiceImpl implements EmailService {
 
     private final JavaMailSender mailSender;
     private final String from;
-    private final String deepLinkBaseUrl;
+    private final String baseUrl;
 
     public EmailServiceImpl(
             JavaMailSender mailSender,
             @Value("${app.mail.from}") String from,
-            @Value("${app.deep-link.base-url}") String deepLinkBaseUrl
+            @Value("${app.base-url}") String baseUrl
     ) {
         this.mailSender = mailSender;
         this.from = from;
-        this.deepLinkBaseUrl = deepLinkBaseUrl;
+        this.baseUrl = baseUrl;
     }
 
     @Override
     public void sendPasswordResetEmail(String to, String resetToken) {
-        String resetLink = deepLinkBaseUrl + "?token=" + resetToken;
+        String resetLink = baseUrl + "/api/auth/reset-password/open?token=" + resetToken;
         String html = buildResetEmailHtml(resetLink);
         try {
             MimeMessage message = mailSender.createMimeMessage();
@@ -45,61 +45,97 @@ public class EmailServiceImpl implements EmailService {
     private String buildResetEmailHtml(String resetLink) {
         return """
                 <!DOCTYPE html>
-                <html lang="vi">
-                <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
-                <body style="margin:0;padding:0;background-color:#0f0f1a;font-family:'Segoe UI',Arial,sans-serif;">
-                  <table width="100%%" cellpadding="0" cellspacing="0" style="background-color:#0f0f1a;padding:40px 16px;">
-                    <tr><td align="center">
-                      <table width="100%%" cellpadding="0" cellspacing="0" style="max-width:480px;background:#1a1a2e;border-radius:20px;overflow:hidden;border:1px solid #2a2a4a;">
+                <html lang="vi" xmlns="http://www.w3.org/1999/xhtml">
+                <head>
+                  <meta charset="UTF-8"/>
+                  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+                  <title>Đặt lại mật khẩu - Folkify</title>
+                </head>
+                <body style="margin:0;padding:0;background-color:#0f0f1a;">
+                <table width="100%%" cellpadding="0" cellspacing="0" border="0" bgcolor="#0f0f1a">
+                  <tr><td align="center" style="padding:40px 16px;">
+                    <table width="520" cellpadding="0" cellspacing="0" border="0" style="max-width:520px;width:100%%;">
 
-                        <!-- Header -->
-                        <tr>
-                          <td style="background:linear-gradient(135deg,#1a1a2e 0%%,#16213e 100%%);padding:32px 40px 24px;border-bottom:2px solid #D97706;">
-                            <div style="display:flex;align-items:center;">
-                              <span style="font-size:28px;font-weight:900;color:#D97706;letter-spacing:-1px;">&#9835; Folkify</span>
-                            </div>
-                            <p style="color:#9999bb;font-size:13px;margin:6px 0 0;">Học nhạc cụ dân tộc Việt Nam</p>
-                          </td>
-                        </tr>
+                      <!-- Logo header -->
+                      <tr>
+                        <td align="center" bgcolor="#1a1a2e" style="background-color:#1a1a2e;padding:28px 40px 20px;border-radius:16px 16px 0 0;border-bottom:3px solid #D97706;">
+                          <table cellpadding="0" cellspacing="0" border="0" width="100%%">
+                            <tr>
+                              <td>
+                                <span style="font-size:26px;font-weight:900;color:#D97706;font-family:Arial,sans-serif;letter-spacing:-0.5px;">&#9835; Folkify</span>
+                              </td>
+                              <td align="right">
+                                <span style="font-size:12px;color:#555577;font-family:Arial,sans-serif;">Học nhạc cụ dân tộc</span>
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
 
-                        <!-- Body -->
-                        <tr>
-                          <td style="padding:36px 40px 28px;">
-                            <div style="width:64px;height:64px;background:rgba(217,119,6,0.15);border-radius:16px;display:flex;align-items:center;justify-content:center;margin-bottom:24px;">
-                              <span style="font-size:30px;">&#128274;</span>
-                            </div>
-                            <h2 style="color:#ffffff;font-size:22px;font-weight:700;margin:0 0 12px;">Đặt lại mật khẩu</h2>
-                            <p style="color:#aaaacc;font-size:15px;line-height:1.6;margin:0 0 8px;">
-                              Bạn vừa yêu cầu đặt lại mật khẩu cho tài khoản Folkify.
-                            </p>
-                            <p style="color:#aaaacc;font-size:15px;line-height:1.6;margin:0 0 28px;">
-                              Nhấn nút bên dưới để tiếp tục. Link có hiệu lực trong <span style="color:#D97706;font-weight:600;">1 giờ</span>.
-                            </p>
-                            <a href="%s"
-                               style="display:inline-block;background:linear-gradient(135deg,#D97706,#f59e0b);color:#ffffff;text-decoration:none;font-size:16px;font-weight:700;padding:15px 36px;border-radius:12px;letter-spacing:0.3px;">
-                              &#128273;&nbsp; Đặt lại mật khẩu
-                            </a>
-                          </td>
-                        </tr>
+                      <!-- Body -->
+                      <tr>
+                        <td bgcolor="#16213e" style="background-color:#16213e;padding:36px 40px 32px;">
+                          <table cellpadding="0" cellspacing="0" border="0" width="100%%">
+                            <tr>
+                              <td style="padding-bottom:20px;">
+                                <table cellpadding="0" cellspacing="0" border="0">
+                                  <tr>
+                                    <td width="52" height="52" bgcolor="#2a1f0a" style="background-color:#2a1f0a;border-radius:12px;text-align:center;vertical-align:middle;">
+                                      <span style="font-size:24px;line-height:52px;">&#128274;</span>
+                                    </td>
+                                  </tr>
+                                </table>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td style="font-family:Arial,sans-serif;font-size:22px;font-weight:700;color:#ffffff;padding-bottom:12px;">
+                                Đặt lại mật khẩu
+                              </td>
+                            </tr>
+                            <tr>
+                              <td style="font-family:Arial,sans-serif;font-size:15px;color:#aaaacc;line-height:1.7;padding-bottom:8px;">
+                                Chúng tôi nhận được yêu cầu đặt lại mật khẩu cho tài khoản Folkify của bạn.
+                              </td>
+                            </tr>
+                            <tr>
+                              <td style="font-family:Arial,sans-serif;font-size:15px;color:#aaaacc;line-height:1.7;padding-bottom:32px;">
+                                Nhấn nút bên dưới để tiếp tục. Link có hiệu lực trong
+                                <span style="color:#D97706;font-weight:700;">1 giờ</span>.
+                              </td>
+                            </tr>
+                            <tr>
+                              <td align="center" style="padding-bottom:8px;">
+                                <a href="%s"
+                                   style="display:inline-block;background-color:#D97706;color:#ffffff;text-decoration:none;font-family:Arial,sans-serif;font-size:16px;font-weight:700;padding:16px 40px;border-radius:12px;letter-spacing:0.3px;">
+                                  Đặt lại mật khẩu
+                                </a>
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
 
-                        <!-- Divider -->
-                        <tr><td style="padding:0 40px;"><div style="height:1px;background:#2a2a4a;"></div></td></tr>
+                      <!-- Footer -->
+                      <tr>
+                        <td bgcolor="#111122" style="background-color:#111122;padding:20px 40px 28px;border-radius:0 0 16px 16px;border-top:1px solid #2a2a4a;">
+                          <table cellpadding="0" cellspacing="0" border="0" width="100%%">
+                            <tr>
+                              <td style="font-family:Arial,sans-serif;font-size:13px;color:#555577;line-height:1.6;padding-bottom:8px;">
+                                Nếu bạn không yêu cầu đặt lại mật khẩu, hãy bỏ qua email này.
+                              </td>
+                            </tr>
+                            <tr>
+                              <td style="font-family:Arial,sans-serif;font-size:12px;color:#444466;">
+                                &copy; 2025 Folkify &mdash; Học nhạc cụ dân tộc Việt Nam
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
 
-                        <!-- Footer -->
-                        <tr>
-                          <td style="padding:24px 40px 32px;">
-                            <p style="color:#555577;font-size:13px;line-height:1.6;margin:0;">
-                              Nếu bạn không yêu cầu đặt lại mật khẩu, hãy bỏ qua email này — mật khẩu sẽ không thay đổi.
-                            </p>
-                            <p style="color:#444466;font-size:12px;margin:12px 0 0;">
-                              &copy; 2025 Folkify. All rights reserved.
-                            </p>
-                          </td>
-                        </tr>
-
-                      </table>
-                    </td></tr>
-                  </table>
+                    </table>
+                  </td></tr>
+                </table>
                 </body>
                 </html>
                 """.formatted(resetLink);
