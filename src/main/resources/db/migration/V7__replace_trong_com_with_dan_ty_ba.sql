@@ -48,8 +48,8 @@ INSERT INTO lesson_tips (lesson_id, tip, order_index) VALUES
 ('b0eebc99-9c0b-4ef8-bb6d-6bb9bd380b09', 'Móng tay phải để dài vừa phải để gảy nhẹ nhàng và có kiểm soát', 1);
 
 -- ==================== SONGS ====================
-UPDATE instrument_songs SET title = 'Tứ đại cảnh', artist = 'Nhã nhạc cung đình Huế', duration = '4:20'
+UPDATE songs SET title = 'Tứ đại cảnh', artist = 'Nhã nhạc cung đình Huế', duration = '4:20'
 WHERE id = 'c0eebc99-9c0b-4ef8-bb6d-6bb9bd380c10';
 
-UPDATE instrument_songs SET title = 'Lưu thủy', artist = 'Nhạc cổ truyền', duration = '3:50'
+UPDATE songs SET title = 'Lưu thủy', artist = 'Nhạc cổ truyền', duration = '3:50'
 WHERE id = 'c0eebc99-9c0b-4ef8-bb6d-6bb9bd380c11';
