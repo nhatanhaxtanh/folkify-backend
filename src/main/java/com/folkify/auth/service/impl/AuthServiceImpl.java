@@ -1,5 +1,7 @@
 package com.folkify.auth.service.impl;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.folkify.auth.dto.*;
 import com.folkify.auth.entity.PasswordResetToken;
 import com.folkify.auth.entity.RefreshToken;
@@ -12,6 +14,8 @@ import com.folkify.auth.service.EmailService;
 import com.folkify.auth.service.JwtService;
 import com.folkify.common.exception.ApiException;
 import com.folkify.common.exception.ErrorCode;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -21,7 +25,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClient;
 
+import java.math.BigInteger;
+import java.security.KeyFactory;
+import java.security.PublicKey;
+import java.security.spec.RSAPublicKeySpec;
 import java.time.LocalDateTime;
+import java.util.Base64;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -37,7 +47,9 @@ public class AuthServiceImpl implements AuthService {
     private final EmailService emailService;
     private final long refreshTokenExpiration;
     private final long resetPasswordExpiration;
+    private final String appleBundleId;
     private final RestClient restClient = RestClient.create();
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     public AuthServiceImpl(
             UserRepository userRepository,
@@ -48,7 +60,8 @@ public class AuthServiceImpl implements AuthService {
             AuthenticationManager authenticationManager,
             EmailService emailService,
             @Value("${app.jwt.refresh-token-expiration}") long refreshTokenExpiration,
-            @Value("${app.reset-password.expiration}") long resetPasswordExpiration
+            @Value("${app.reset-password.expiration}") long resetPasswordExpiration,
+            @Value("${app.apple.bundle-id:com.folkify.app}") String appleBundleId
     ) {
         this.userRepository = userRepository;
         this.refreshTokenRepository = refreshTokenRepository;
@@ -59,6 +72,7 @@ public class AuthServiceImpl implements AuthService {
         this.emailService = emailService;
         this.refreshTokenExpiration = refreshTokenExpiration;
         this.resetPasswordExpiration = resetPasswordExpiration;
+        this.appleBundleId = appleBundleId;
     }
 
     @Override
@@ -122,6 +136,88 @@ public class AuthServiceImpl implements AuthService {
 
         return buildAuthResponse(user);
     }
+
+    @Override
+    @Transactional
+    public AuthResponse loginWithApple(AppleAuthRequest request) {
+        String[] parts = request.identityToken().split("\\.");
+        if (parts.length != 3) throw new ApiException(ErrorCode.APPLE_AUTH_FAILED);
+
+        String kid;
+        try {
+            JsonNode header = objectMapper.readTree(Base64.getUrlDecoder().decode(parts[0]));
+            kid = header.get("kid").asText();
+        } catch (Exception e) {
+            throw new ApiException(ErrorCode.APPLE_AUTH_FAILED);
+        }
+
+        AppleKeysResponse keysResponse;
+        try {
+            keysResponse = restClient.get()
+                    .uri("https://appleid.apple.com/auth/keys")
+                    .retrieve()
+                    .body(AppleKeysResponse.class);
+        } catch (Exception e) {
+            throw new ApiException(ErrorCode.APPLE_AUTH_FAILED);
+        }
+
+        if (keysResponse == null) throw new ApiException(ErrorCode.APPLE_AUTH_FAILED);
+
+        AppleKey matchingKey = keysResponse.keys().stream()
+                .filter(k -> k.kid().equals(kid))
+                .findFirst()
+                .orElseThrow(() -> new ApiException(ErrorCode.APPLE_AUTH_FAILED));
+
+        PublicKey publicKey;
+        try {
+            BigInteger modulus = new BigInteger(1, Base64.getUrlDecoder().decode(matchingKey.n()));
+            BigInteger exponent = new BigInteger(1, Base64.getUrlDecoder().decode(matchingKey.e()));
+            publicKey = KeyFactory.getInstance("RSA").generatePublic(new RSAPublicKeySpec(modulus, exponent));
+        } catch (Exception e) {
+            throw new ApiException(ErrorCode.APPLE_AUTH_FAILED);
+        }
+
+        Claims claims;
+        try {
+            claims = Jwts.parser()
+                    .verifyWith(publicKey)
+                    .build()
+                    .parseSignedClaims(request.identityToken())
+                    .getPayload();
+        } catch (Exception e) {
+            throw new ApiException(ErrorCode.APPLE_AUTH_FAILED);
+        }
+
+        String iss = claims.getIssuer();
+        boolean audMatches = claims.getAudience() != null && claims.getAudience().contains(appleBundleId);
+        if (!"https://appleid.apple.com".equals(iss) || !audMatches) {
+            throw new ApiException(ErrorCode.APPLE_AUTH_FAILED);
+        }
+
+        String appleSub = claims.getSubject();
+        String email = claims.get("email", String.class);
+        if (appleSub == null || email == null) throw new ApiException(ErrorCode.APPLE_AUTH_FAILED);
+
+        User user = userRepository.findByAppleSub(appleSub)
+                .orElseGet(() -> userRepository.findByEmail(email)
+                        .map(u -> { u.setAppleSub(appleSub); return userRepository.save(u); })
+                        .orElseGet(() -> {
+                            String name = (request.fullName() != null && !request.fullName().isBlank())
+                                    ? request.fullName()
+                                    : email.split("@")[0];
+                            return userRepository.save(User.builder()
+                                    .name(name)
+                                    .email(email)
+                                    .password(passwordEncoder.encode(UUID.randomUUID().toString()))
+                                    .appleSub(appleSub)
+                                    .build());
+                        }));
+
+        return buildAuthResponse(user);
+    }
+
+    private record AppleKey(String kty, String kid, String use, String alg, String n, String e) {}
+    private record AppleKeysResponse(List<AppleKey> keys) {}
 
     @Override
     @Transactional

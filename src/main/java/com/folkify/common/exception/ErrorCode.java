@@ -13,6 +13,7 @@ public enum ErrorCode {
     REFRESH_TOKEN_EXPIRED(1004, "Refresh token đã hết hạn hoặc bị thu hồi", HttpStatus.UNAUTHORIZED),
     GOOGLE_AUTH_FAILED(1005, "Xác thực Google thất bại, vui lòng thử lại", HttpStatus.UNAUTHORIZED),
     INVALID_RESET_TOKEN(1006, "Token đặt lại mật khẩu không hợp lệ hoặc đã được sử dụng", HttpStatus.BAD_REQUEST),
+    APPLE_AUTH_FAILED(1008, "Xác thực Apple thất bại, vui lòng thử lại", HttpStatus.UNAUTHORIZED),
     RESET_TOKEN_EXPIRED(1007, "Token đặt lại mật khẩu đã hết hạn", HttpStatus.BAD_REQUEST),
 
     // Instrument (1100 - 1199)

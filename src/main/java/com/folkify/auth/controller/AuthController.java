@@ -54,6 +54,12 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponse.success("Đăng nhập Google thành công", authService.loginWithGoogle(request)));
     }
 
+    @PostMapping("/apple")
+    @Operation(summary = "Đăng nhập bằng Apple")
+    public ResponseEntity<ApiResponse<AuthResponse>> loginWithApple(@Valid @RequestBody AppleAuthRequest request) {
+        return ResponseEntity.ok(ApiResponse.success("Đăng nhập Apple thành công", authService.loginWithApple(request)));
+    }
+
     @PostMapping("/logout")
     @Operation(summary = "Đăng xuất")
     public ResponseEntity<ApiResponse<Void>> logout(@Valid @RequestBody LogoutRequest request) {

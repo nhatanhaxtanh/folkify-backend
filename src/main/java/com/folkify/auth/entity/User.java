@@ -26,6 +26,9 @@ public class User extends BaseEntity implements UserDetails {
     @Column(nullable = false)
     private Role role = Role.USER;
 
+    @Column(name = "apple_sub", unique = true)
+    private String appleSub;
+
     public User() {}
 
     private User(Builder builder) {
@@ -33,6 +36,7 @@ public class User extends BaseEntity implements UserDetails {
         this.email = builder.email;
         this.password = builder.password;
         this.role = builder.role != null ? builder.role : Role.USER;
+        this.appleSub = builder.appleSub;
     }
 
     public static Builder builder() { return new Builder(); }
@@ -42,20 +46,24 @@ public class User extends BaseEntity implements UserDetails {
         private String email;
         private String password;
         private Role role;
+        private String appleSub;
 
         public Builder name(String name) { this.name = name; return this; }
         public Builder email(String email) { this.email = email; return this; }
         public Builder password(String password) { this.password = password; return this; }
         public Builder role(Role role) { this.role = role; return this; }
+        public Builder appleSub(String appleSub) { this.appleSub = appleSub; return this; }
         public User build() { return new User(this); }
     }
 
     public String getName() { return name; }
     public String getEmail() { return email; }
     public Role getRole() { return role; }
+    public String getAppleSub() { return appleSub; }
 
     public void setName(String name) { this.name = name; }
     public void setPassword(String password) { this.password = password; }
+    public void setAppleSub(String appleSub) { this.appleSub = appleSub; }
 
     @Override public String getUsername() { return email; }
     @Override public String getPassword() { return password; }
