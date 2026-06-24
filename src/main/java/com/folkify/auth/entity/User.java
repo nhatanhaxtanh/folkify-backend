@@ -71,6 +71,7 @@ public class User extends BaseEntity implements UserDetails {
 
     public void setName(String name) { this.name = name; }
     public void setPassword(String password) { this.password = password; }
+    public void setRole(Role role) { this.role = role; }
     public void setPlan(Plan plan) { this.plan = plan; }
     public void setAppleSub(String appleSub) { this.appleSub = appleSub; }
 
