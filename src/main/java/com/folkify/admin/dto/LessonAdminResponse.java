@@ -2,6 +2,7 @@ package com.folkify.admin.dto;
 
 import com.folkify.instrument.entity.Lesson;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -26,7 +27,7 @@ public record LessonAdminResponse(
                 l.getInstrument().getId(),
                 l.getInstrument().getName(),
                 l.getSlug(), l.getTitle(), l.getDuration(), l.getLevel(),
-                l.getDescription(), l.getSteps(), l.getTips(),
+                l.getDescription(), new ArrayList<>(l.getSteps()), new ArrayList<>(l.getTips()),
                 l.getXp(), l.getYoutubeUrl(), l.getOrderIndex()
         );
     }

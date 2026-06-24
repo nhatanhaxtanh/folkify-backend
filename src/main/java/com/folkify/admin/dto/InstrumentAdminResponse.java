@@ -2,6 +2,7 @@ package com.folkify.admin.dto;
 
 import com.folkify.instrument.entity.Instrument;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -32,7 +33,7 @@ public record InstrumentAdminResponse(
                 i.getImageUrl(), i.getShortDesc(), i.getDescription(),
                 i.getOrigin(), i.getMaterial(), i.getSoundRange(),
                 i.getDifficulty(), i.getPopularity(), i.getLessonCount(),
-                i.getFacts()
+                new ArrayList<>(i.getFacts())
         );
     }
 }
