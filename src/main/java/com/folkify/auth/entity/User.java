@@ -26,6 +26,10 @@ public class User extends BaseEntity implements UserDetails {
     @Column(nullable = false)
     private Role role = Role.USER;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Plan plan = Plan.FREE;
+
     @Column(name = "apple_sub", unique = true)
     private String appleSub;
 
@@ -36,6 +40,7 @@ public class User extends BaseEntity implements UserDetails {
         this.email = builder.email;
         this.password = builder.password;
         this.role = builder.role != null ? builder.role : Role.USER;
+        this.plan = builder.plan != null ? builder.plan : Plan.FREE;
         this.appleSub = builder.appleSub;
     }
 
@@ -46,12 +51,14 @@ public class User extends BaseEntity implements UserDetails {
         private String email;
         private String password;
         private Role role;
+        private Plan plan;
         private String appleSub;
 
         public Builder name(String name) { this.name = name; return this; }
         public Builder email(String email) { this.email = email; return this; }
         public Builder password(String password) { this.password = password; return this; }
         public Builder role(Role role) { this.role = role; return this; }
+        public Builder plan(Plan plan) { this.plan = plan; return this; }
         public Builder appleSub(String appleSub) { this.appleSub = appleSub; return this; }
         public User build() { return new User(this); }
     }
@@ -59,10 +66,12 @@ public class User extends BaseEntity implements UserDetails {
     public String getName() { return name; }
     public String getEmail() { return email; }
     public Role getRole() { return role; }
+    public Plan getPlan() { return plan; }
     public String getAppleSub() { return appleSub; }
 
     public void setName(String name) { this.name = name; }
     public void setPassword(String password) { this.password = password; }
+    public void setPlan(Plan plan) { this.plan = plan; }
     public void setAppleSub(String appleSub) { this.appleSub = appleSub; }
 
     @Override public String getUsername() { return email; }

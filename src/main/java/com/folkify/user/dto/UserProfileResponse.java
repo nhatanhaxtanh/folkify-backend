@@ -10,6 +10,7 @@ public record UserProfileResponse(
         String name,
         String email,
         String role,
+        String plan,
         LocalDateTime createdAt
 ) {
     public static UserProfileResponse from(User user) {
@@ -18,6 +19,7 @@ public record UserProfileResponse(
                 user.getName(),
                 user.getEmail(),
                 user.getRole().name(),
+                user.getPlan().name(),
                 user.getCreatedAt()
         );
     }
