@@ -12,6 +12,7 @@ import java.util.UUID;
 public interface LessonRepository extends JpaRepository<Lesson, UUID> {
 
     List<Lesson> findByInstrumentSlugOrderByOrderIndexAsc(String slug);
+    List<Lesson> findByInstrumentIdOrderByOrderIndexAsc(UUID instrumentId);
 
     @Query("SELECT l FROM Lesson l WHERE l.slug = :lessonSlug AND l.instrument.slug = :instrumentSlug")
     Optional<Lesson> findBySlugAndInstrumentSlug(

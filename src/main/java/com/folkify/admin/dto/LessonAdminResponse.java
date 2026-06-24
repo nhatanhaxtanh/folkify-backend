@@ -1,0 +1,33 @@
+package com.folkify.admin.dto;
+
+import com.folkify.instrument.entity.Lesson;
+
+import java.util.List;
+import java.util.UUID;
+
+public record LessonAdminResponse(
+        UUID id,
+        UUID instrumentId,
+        String instrumentName,
+        String slug,
+        String title,
+        String duration,
+        String level,
+        String description,
+        List<String> steps,
+        List<String> tips,
+        int xp,
+        String youtubeUrl,
+        int orderIndex
+) {
+    public static LessonAdminResponse from(Lesson l) {
+        return new LessonAdminResponse(
+                l.getId(),
+                l.getInstrument().getId(),
+                l.getInstrument().getName(),
+                l.getSlug(), l.getTitle(), l.getDuration(), l.getLevel(),
+                l.getDescription(), l.getSteps(), l.getTips(),
+                l.getXp(), l.getYoutubeUrl(), l.getOrderIndex()
+        );
+    }
+}

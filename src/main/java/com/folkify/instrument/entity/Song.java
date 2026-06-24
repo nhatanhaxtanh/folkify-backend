@@ -26,4 +26,10 @@ public class Song extends BaseEntity {
     public String getArtist() { return artist; }
     public String getDuration() { return duration; }
     public int getOrderIndex() { return orderIndex; }
+
+    public void setInstrument(Instrument instrument) { this.instrument = instrument; }
+    public void setTitle(String title) { this.title = title; }
+    public void setArtist(String artist) { this.artist = artist; }
+    public void setDuration(String duration) { this.duration = duration; }
+    public void setOrderIndex(int orderIndex) { this.orderIndex = orderIndex; }
 }

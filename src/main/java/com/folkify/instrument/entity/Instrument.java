@@ -80,4 +80,20 @@ public class Instrument extends BaseEntity {
     public List<String> getFacts() { return facts; }
     public List<Lesson> getLessons() { return lessons; }
     public List<Song> getSongs() { return songs; }
+
+    public void setName(String name) { this.name = name; }
+    public void setEnglishName(String englishName) { this.englishName = englishName; }
+    public void setRegion(String region) { this.region = region; }
+    public void setCategory(String category) { this.category = category; }
+    public void setEmoji(String emoji) { this.emoji = emoji; }
+    public void setColor(String color) { this.color = color; }
+    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
+    public void setShortDesc(String shortDesc) { this.shortDesc = shortDesc; }
+    public void setDescription(String description) { this.description = description; }
+    public void setOrigin(String origin) { this.origin = origin; }
+    public void setMaterial(String material) { this.material = material; }
+    public void setSoundRange(String soundRange) { this.soundRange = soundRange; }
+    public void setDifficulty(int difficulty) { this.difficulty = difficulty; }
+    public void setPopularity(int popularity) { this.popularity = popularity; }
+    public void setFacts(List<String> facts) { this.facts = facts; }
 }

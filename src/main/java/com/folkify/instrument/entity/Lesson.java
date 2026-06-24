@@ -56,4 +56,16 @@ public class Lesson extends BaseEntity {
     public int getXp() { return xp; }
     public String getYoutubeUrl() { return youtubeUrl; }
     public int getOrderIndex() { return orderIndex; }
+
+    public void setInstrument(Instrument instrument) { this.instrument = instrument; }
+    public void setSlug(String slug) { this.slug = slug; }
+    public void setTitle(String title) { this.title = title; }
+    public void setDuration(String duration) { this.duration = duration; }
+    public void setLevel(String level) { this.level = level; }
+    public void setDescription(String description) { this.description = description; }
+    public void setSteps(List<String> steps) { this.steps = steps; }
+    public void setTips(List<String> tips) { this.tips = tips; }
+    public void setXp(int xp) { this.xp = xp; }
+    public void setYoutubeUrl(String youtubeUrl) { this.youtubeUrl = youtubeUrl; }
+    public void setOrderIndex(int orderIndex) { this.orderIndex = orderIndex; }
 }
