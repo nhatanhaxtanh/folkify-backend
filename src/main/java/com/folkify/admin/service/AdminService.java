@@ -13,4 +13,5 @@ public interface AdminService {
     List<AdminUserResponse> getAllUsers();
     AdminUserResponse updateUserPlan(UUID userId, Plan plan);
     AdminUserResponse updateUserRole(UUID userId, Role role);
+    void deleteUser(UUID userId);
 }

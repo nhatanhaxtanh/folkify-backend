@@ -52,4 +52,11 @@ public class AdminController {
             @Valid @RequestBody UpdateRoleRequest request) {
         return ResponseEntity.ok(ApiResponse.success("Cập nhật role thành công", adminService.updateUserRole(id, request.role())));
     }
+
+    @DeleteMapping("/users/{id}")
+    @Operation(summary = "Xóa người dùng")
+    public ResponseEntity<ApiResponse<Void>> deleteUser(@PathVariable UUID id) {
+        adminService.deleteUser(id);
+        return ResponseEntity.ok(ApiResponse.success("Xóa người dùng thành công", null));
+    }
 }

@@ -69,4 +69,13 @@ public class AdminServiceImpl implements AdminService {
         user.setRole(role);
         return AdminUserResponse.from(userRepository.save(user));
     }
+
+    @Override
+    @Transactional
+    public void deleteUser(UUID userId) {
+        if (!userRepository.existsById(userId)) {
+            throw new ApiException(ErrorCode.USER_NOT_FOUND);
+        }
+        userRepository.deleteById(userId);
+    }
 }
