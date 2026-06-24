@@ -103,6 +103,7 @@ public class AdminServiceImpl implements AdminService {
     // ── Instruments ────────────────────────────────────────────────────────
 
     @Override
+    @Transactional(readOnly = true)
     public List<InstrumentAdminResponse> getAllInstruments() {
         return instrumentRepository.findAllByOrderByPopularityDesc().stream()
                 .map(InstrumentAdminResponse::from)
@@ -135,6 +136,7 @@ public class AdminServiceImpl implements AdminService {
     // ── Lessons ────────────────────────────────────────────────────────────
 
     @Override
+    @Transactional(readOnly = true)
     public List<LessonAdminResponse> getLessons(UUID instrumentId) {
         List<Lesson> lessons = instrumentId != null
                 ? lessonRepository.findByInstrumentIdOrderByOrderIndexAsc(instrumentId)
@@ -197,6 +199,7 @@ public class AdminServiceImpl implements AdminService {
     // ── Songs ──────────────────────────────────────────────────────────────
 
     @Override
+    @Transactional(readOnly = true)
     public List<SongAdminResponse> getSongs(UUID instrumentId) {
         List<Song> songs = instrumentId != null
                 ? songRepository.findByInstrumentIdOrderByOrderIndexAsc(instrumentId)
@@ -247,6 +250,7 @@ public class AdminServiceImpl implements AdminService {
     // ── Sheet Music ────────────────────────────────────────────────────────
 
     @Override
+    @Transactional(readOnly = true)
     public List<SheetMusicResponse> getSheets(UUID instrumentId) {
         List<SheetMusic> sheets = instrumentId != null
                 ? sheetMusicRepository.findAll().stream()
