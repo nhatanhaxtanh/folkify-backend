@@ -22,6 +22,7 @@ public enum ErrorCode {
     LESSON_ALREADY_COMPLETED(1102, "Bài học đã được hoàn thành trước đó", HttpStatus.CONFLICT),
     SONG_NOT_FOUND(1103, "Không tìm thấy bài hát", HttpStatus.NOT_FOUND),
     SHEET_NOT_FOUND(1104, "Không tìm thấy sheet nhạc", HttpStatus.NOT_FOUND),
+    BLOG_POST_NOT_FOUND(1105, "Không tìm thấy bài viết", HttpStatus.NOT_FOUND),
 
     // User (1200 - 1299)
     USER_NOT_FOUND(1200, "Không tìm thấy người dùng", HttpStatus.NOT_FOUND),

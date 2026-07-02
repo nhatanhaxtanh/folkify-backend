@@ -2,6 +2,8 @@ package com.folkify.admin.controller;
 
 import com.folkify.admin.dto.*;
 import com.folkify.admin.service.AdminService;
+import com.folkify.blog.dto.BlogPostRequest;
+import com.folkify.blog.dto.BlogPostResponse;
 import com.folkify.common.response.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -173,5 +175,36 @@ public class AdminController {
     public ResponseEntity<ApiResponse<Void>> deleteSheet(@PathVariable UUID id) {
         adminService.deleteSheet(id);
         return ResponseEntity.ok(ApiResponse.success("Xóa sheet nhạc thành công", null));
+    }
+
+    // ── Blog ───────────────────────────────────────────────────────────────
+
+    @GetMapping("/blog")
+    @Operation(summary = "Danh sách tất cả bài viết blog")
+    public ResponseEntity<ApiResponse<List<BlogPostResponse>>> getAllBlogPosts() {
+        return ResponseEntity.ok(ApiResponse.success(adminService.getAllBlogPosts()));
+    }
+
+    @PostMapping("/blog")
+    @Operation(summary = "Tạo bài viết mới")
+    public ResponseEntity<ApiResponse<BlogPostResponse>> createBlogPost(
+            @Valid @RequestBody BlogPostRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success("Tạo bài viết thành công", adminService.createBlogPost(request)));
+    }
+
+    @PatchMapping("/blog/{id}")
+    @Operation(summary = "Cập nhật bài viết")
+    public ResponseEntity<ApiResponse<BlogPostResponse>> updateBlogPost(
+            @PathVariable UUID id,
+            @RequestBody BlogPostRequest request) {
+        return ResponseEntity.ok(ApiResponse.success("Cập nhật bài viết thành công", adminService.updateBlogPost(id, request)));
+    }
+
+    @DeleteMapping("/blog/{id}")
+    @Operation(summary = "Xóa bài viết")
+    public ResponseEntity<ApiResponse<Void>> deleteBlogPost(@PathVariable UUID id) {
+        adminService.deleteBlogPost(id);
+        return ResponseEntity.ok(ApiResponse.success("Xóa bài viết thành công", null));
     }
 }

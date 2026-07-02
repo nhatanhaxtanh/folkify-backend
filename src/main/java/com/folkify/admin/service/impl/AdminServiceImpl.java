@@ -6,6 +6,10 @@ import com.folkify.auth.entity.Plan;
 import com.folkify.auth.entity.Role;
 import com.folkify.auth.entity.User;
 import com.folkify.auth.repository.UserRepository;
+import com.folkify.blog.dto.BlogPostRequest;
+import com.folkify.blog.dto.BlogPostResponse;
+import com.folkify.blog.entity.BlogPost;
+import com.folkify.blog.repository.BlogPostRepository;
 import com.folkify.common.exception.ApiException;
 import com.folkify.common.exception.ErrorCode;
 import com.folkify.instrument.entity.Instrument;
@@ -31,17 +35,20 @@ public class AdminServiceImpl implements AdminService {
     private final LessonRepository lessonRepository;
     private final SongRepository songRepository;
     private final SheetMusicRepository sheetMusicRepository;
+    private final BlogPostRepository blogPostRepository;
 
     public AdminServiceImpl(UserRepository userRepository,
                             InstrumentRepository instrumentRepository,
                             LessonRepository lessonRepository,
                             SongRepository songRepository,
-                            SheetMusicRepository sheetMusicRepository) {
+                            SheetMusicRepository sheetMusicRepository,
+                            BlogPostRepository blogPostRepository) {
         this.userRepository = userRepository;
         this.instrumentRepository = instrumentRepository;
         this.lessonRepository = lessonRepository;
         this.songRepository = songRepository;
         this.sheetMusicRepository = sheetMusicRepository;
+        this.blogPostRepository = blogPostRepository;
     }
 
     // ── Users ──────────────────────────────────────────────────────────────
@@ -308,5 +315,63 @@ public class AdminServiceImpl implements AdminService {
             throw new ApiException(ErrorCode.SHEET_NOT_FOUND);
         }
         sheetMusicRepository.deleteById(id);
+    }
+
+    // ── Blog ───────────────────────────────────────────────────────────────
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<BlogPostResponse> getAllBlogPosts() {
+        return blogPostRepository.findAll().stream()
+                .sorted((a, b) -> {
+                    if (a.getCreatedAt() == null) return 1;
+                    if (b.getCreatedAt() == null) return -1;
+                    return b.getCreatedAt().compareTo(a.getCreatedAt());
+                })
+                .map(BlogPostResponse::from)
+                .toList();
+    }
+
+    @Override
+    @Transactional
+    public BlogPostResponse createBlogPost(BlogPostRequest req) {
+        BlogPost post = new BlogPost();
+        post.setSlug(req.slug());
+        post.setTitle(req.title());
+        post.setSummary(req.summary());
+        post.setContent(req.content());
+        post.setCoverImageUrl(req.coverImageUrl());
+        post.setCategory(req.category());
+        post.setAuthorName(req.authorName());
+        post.setPublished(req.published());
+        if (req.published()) post.setPublishedAt(java.time.LocalDateTime.now());
+        return BlogPostResponse.from(blogPostRepository.save(post));
+    }
+
+    @Override
+    @Transactional
+    public BlogPostResponse updateBlogPost(UUID id, BlogPostRequest req) {
+        BlogPost post = blogPostRepository.findById(id)
+                .orElseThrow(() -> new ApiException(ErrorCode.BLOG_POST_NOT_FOUND));
+        if (req.slug() != null)          post.setSlug(req.slug());
+        if (req.title() != null)         post.setTitle(req.title());
+        if (req.summary() != null)       post.setSummary(req.summary());
+        if (req.content() != null)       post.setContent(req.content());
+        if (req.coverImageUrl() != null) post.setCoverImageUrl(req.coverImageUrl());
+        if (req.category() != null)      post.setCategory(req.category());
+        if (req.authorName() != null)    post.setAuthorName(req.authorName());
+        boolean wasPublished = post.isPublished();
+        post.setPublished(req.published());
+        if (req.published() && !wasPublished) post.setPublishedAt(java.time.LocalDateTime.now());
+        return BlogPostResponse.from(blogPostRepository.save(post));
+    }
+
+    @Override
+    @Transactional
+    public void deleteBlogPost(UUID id) {
+        if (!blogPostRepository.existsById(id)) {
+            throw new ApiException(ErrorCode.BLOG_POST_NOT_FOUND);
+        }
+        blogPostRepository.deleteById(id);
     }
 }

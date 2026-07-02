@@ -3,6 +3,8 @@ package com.folkify.admin.service;
 import com.folkify.admin.dto.*;
 import com.folkify.auth.entity.Plan;
 import com.folkify.auth.entity.Role;
+import com.folkify.blog.dto.BlogPostRequest;
+import com.folkify.blog.dto.BlogPostResponse;
 
 import java.util.List;
 import java.util.UUID;
@@ -36,4 +38,10 @@ public interface AdminService {
     SheetMusicResponse createSheet(SheetMusicRequest request);
     SheetMusicResponse updateSheet(UUID id, SheetMusicRequest request);
     void deleteSheet(UUID id);
+
+    // Blog
+    List<BlogPostResponse> getAllBlogPosts();
+    BlogPostResponse createBlogPost(BlogPostRequest request);
+    BlogPostResponse updateBlogPost(UUID id, BlogPostRequest request);
+    void deleteBlogPost(UUID id);
 }
