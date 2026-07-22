@@ -127,19 +127,21 @@ public class CheckoutServiceImpl implements CheckoutService {
     private CheckoutResponse callPay2sWithRetry(Pay2sCreateLinkRequest payload, String orderId) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setAccept(java.util.List.of(MediaType.APPLICATION_JSON));
         HttpEntity<Pay2sCreateLinkRequest> entity = new HttpEntity<>(payload, headers);
 
         Exception lastException = null;
         for (int attempt = 1; attempt <= 2; attempt++) {
             try {
-                log.info("Gọi Pay2S lần {} | OrderId: {}", attempt, orderId);
+                log.info("Gọi Pay2S lần {} | URL: {} | OrderId: {} | payload: {}",
+                        attempt, props.getApiUrl(), orderId, payload);
                 ResponseEntity<String> response =
                         pay2sRestTemplate.postForEntity(props.getApiUrl(), entity, String.class);
                 String body = response.getBody();
-                log.info("Pay2S response: {}", body);
+                log.info("Pay2S response | status={} | body={}", response.getStatusCode(), body);
 
                 if (body == null || body.isBlank()) {
-                    throw new RuntimeException("Pay2S trả về body rỗng");
+                    throw new RuntimeException("Pay2S trả về body rỗng (status " + response.getStatusCode() + ")");
                 }
 
                 JsonNode node = objectMapper.readTree(body);
@@ -149,9 +151,13 @@ public class CheckoutServiceImpl implements CheckoutService {
 
                 log.error("Pay2S không trả về payUrl! Response: {}", body);
                 throw new RuntimeException("Pay2S không trả về payUrl");
+            } catch (org.springframework.web.client.RestClientResponseException e) {
+                lastException = e;
+                log.warn("Pay2S attempt {} lỗi HTTP {} | body: {}",
+                        attempt, e.getStatusCode(), e.getResponseBodyAsString());
             } catch (Exception e) {
                 lastException = e;
-                log.warn("Pay2S attempt {} thất bại: {}", attempt, e.getMessage());
+                log.warn("Pay2S attempt {} thất bại: {}", attempt, e.toString());
             }
         }
 
