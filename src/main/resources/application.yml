@@ -44,6 +44,23 @@ r2:
   bucket-name: ${R2_BUCKET_NAME}
   public-url: ${R2_PUBLIC_URL}
 
+pay2s:
+  api-url: ${PAY2S_API_URL:https://payment.pay2s.vn/v1/gateway/api/create}
+  partner-code: ${PAY2S_PARTNER_CODE:}
+  partner-name: ${PAY2S_PARTNER_NAME:Folkify}
+  access-key: ${PAY2S_ACCESS_KEY:}
+  secret-key: ${PAY2S_SECRET_KEY:}
+  ipn-url: ${PAY2S_IPN_URL:http://localhost:8080/api/payments/webhooks/pay2s}
+  redirect-url: ${PAY2S_REDIRECT_URL:http://localhost:8080/api/payments/result}
+  verify-webhook-signature: ${PAY2S_VERIFY_WEBHOOK:false}
+  bank:
+    account-number: ${PAY2S_BANK_ACCOUNT_NUMBER:}
+    bank-id: ${PAY2S_BANK_ID:}
+    account-holder: ${PAY2S_BANK_ACCOUNT_HOLDER:}
+  plan-prices:
+    BASIC: ${PAY2S_PRICE_BASIC:99000}
+    PRO: ${PAY2S_PRICE_PRO:199000}
+
 app:
   jwt:
     secret: ${JWT_SECRET:folkify-super-secret-key-change-this-in-production-must-be-256-bits}

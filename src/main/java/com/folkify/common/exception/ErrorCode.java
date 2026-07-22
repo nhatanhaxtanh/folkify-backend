@@ -28,6 +28,12 @@ public enum ErrorCode {
     USER_NOT_FOUND(1200, "Không tìm thấy người dùng", HttpStatus.NOT_FOUND),
     WRONG_PASSWORD(1201, "Mật khẩu hiện tại không đúng", HttpStatus.BAD_REQUEST),
 
+    // Payment (1300 - 1399)
+    INVALID_PLAN(1300, "Gói thanh toán không hợp lệ", HttpStatus.BAD_REQUEST),
+    ALREADY_ON_PLAN(1301, "Bạn đang sử dụng gói này rồi", HttpStatus.CONFLICT),
+    PAYMENT_NOT_FOUND(1302, "Không tìm thấy giao dịch thanh toán", HttpStatus.NOT_FOUND),
+    PAYMENT_GATEWAY_ERROR(1303, "Lỗi kết nối cổng thanh toán", HttpStatus.BAD_GATEWAY),
+
     // General (4000+)
     VALIDATION_ERROR(4000, "Dữ liệu không hợp lệ", HttpStatus.BAD_REQUEST),
     RESOURCE_NOT_FOUND(4004, "Không tìm thấy tài nguyên", HttpStatus.NOT_FOUND),
