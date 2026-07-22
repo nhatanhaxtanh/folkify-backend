@@ -85,15 +85,21 @@ public class CheckoutServiceImpl implements CheckoutService {
         txn.setStatus(TransactionStatus.PENDING);
         transactionRepo.saveAndFlush(txn);
 
+        return callPay2sWithRetry(orderId, transferContent, price);
+    }
+
+    /** Tạo payload Pay2S với requestId + chữ ký mới cho mỗi lần thử. */
+    private Pay2sCreateLinkRequest buildPayload(String orderId, String transferContent, long price) {
         String amountStr = String.valueOf(price);
-        String requestId = String.valueOf(System.currentTimeMillis());
+        // requestId phải duy nhất từng lần gọi (tránh cổng coi là trùng và trả về rỗng).
+        String requestId = System.currentTimeMillis() + String.format("%03d", (int) (Math.random() * 1000));
 
         String signature = Pay2sSignatureUtil.generateSignature(
                 props.getAccessKey(), amountStr, props.getIpnUrl(), orderId, transferContent,
                 props.getPartnerCode(), props.getRedirectUrl(), requestId, REQUEST_TYPE,
                 props.getSecretKey());
 
-        Pay2sCreateLinkRequest payload = new Pay2sCreateLinkRequest(
+        return new Pay2sCreateLinkRequest(
                 props.getAccessKey(),
                 props.getPartnerCode(),
                 props.getPartnerName(),
@@ -108,8 +114,6 @@ public class CheckoutServiceImpl implements CheckoutService {
                 props.getIpnUrl(),
                 REQUEST_TYPE,
                 signature);
-
-        return callPay2sWithRetry(payload, orderId);
     }
 
     @Override
@@ -124,33 +128,35 @@ public class CheckoutServiceImpl implements CheckoutService {
         return new PaymentStatusResponse(orderId, txn.getStatus(), txn.getTargetPlan());
     }
 
-    private CheckoutResponse callPay2sWithRetry(Pay2sCreateLinkRequest payload, String orderId) {
+    private CheckoutResponse callPay2sWithRetry(String orderId, String transferContent, long price) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(java.util.List.of(MediaType.APPLICATION_JSON));
-        HttpEntity<Pay2sCreateLinkRequest> entity = new HttpEntity<>(payload, headers);
 
+        final int maxAttempts = 3;
         Exception lastException = null;
-        for (int attempt = 1; attempt <= 2; attempt++) {
+        for (int attempt = 1; attempt <= maxAttempts; attempt++) {
             try {
-                log.info("Gọi Pay2S lần {} | URL: {} | OrderId: {} | payload: {}",
-                        attempt, props.getApiUrl(), orderId, payload);
+                // Payload mới (requestId + chữ ký mới) cho mỗi lần thử.
+                Pay2sCreateLinkRequest payload = buildPayload(orderId, transferContent, price);
+                HttpEntity<Pay2sCreateLinkRequest> entity = new HttpEntity<>(payload, headers);
+
+                log.info("Gọi Pay2S lần {} | OrderId: {} | requestId: {}",
+                        attempt, orderId, payload.requestId());
                 ResponseEntity<String> response =
                         pay2sRestTemplate.postForEntity(props.getApiUrl(), entity, String.class);
                 String body = response.getBody();
                 log.info("Pay2S response | status={} | body={}", response.getStatusCode(), body);
 
-                if (body == null || body.isBlank()) {
-                    throw new RuntimeException("Pay2S trả về body rỗng (status " + response.getStatusCode() + ")");
+                if (body != null && !body.isBlank()) {
+                    JsonNode node = objectMapper.readTree(body);
+                    if (node.hasNonNull("payUrl")) {
+                        return new CheckoutResponse(node.get("payUrl").asText(), orderId);
+                    }
+                    log.error("Pay2S không trả về payUrl! Response: {}", body);
+                } else {
+                    log.warn("Pay2S trả về body rỗng (status {})", response.getStatusCode());
                 }
-
-                JsonNode node = objectMapper.readTree(body);
-                if (node.hasNonNull("payUrl")) {
-                    return new CheckoutResponse(node.get("payUrl").asText(), orderId);
-                }
-
-                log.error("Pay2S không trả về payUrl! Response: {}", body);
-                throw new RuntimeException("Pay2S không trả về payUrl");
             } catch (org.springframework.web.client.RestClientResponseException e) {
                 lastException = e;
                 log.warn("Pay2S attempt {} lỗi HTTP {} | body: {}",
@@ -158,6 +164,16 @@ public class CheckoutServiceImpl implements CheckoutService {
             } catch (Exception e) {
                 lastException = e;
                 log.warn("Pay2S attempt {} thất bại: {}", attempt, e.toString());
+            }
+
+            // Backoff tăng dần trước khi thử lại (cho cổng thời gian hồi phục).
+            if (attempt < maxAttempts) {
+                try {
+                    Thread.sleep(600L * attempt);
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
             }
         }
 
