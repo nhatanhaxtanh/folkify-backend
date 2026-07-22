@@ -58,8 +58,8 @@ pay2s:
     bank-id: ${PAY2S_BANK_ID:}
     account-holder: ${PAY2S_BANK_ACCOUNT_HOLDER:}
   plan-prices:
-    BASIC: ${PAY2S_PRICE_BASIC:99000}
-    PRO: ${PAY2S_PRICE_PRO:199000}
+    BASIC: ${PAY2S_PRICE_BASIC:49000}
+    PRO: ${PAY2S_PRICE_PRO:99000}
 
 app:
   jwt:
