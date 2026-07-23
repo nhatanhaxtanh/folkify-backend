@@ -57,4 +57,13 @@ public class UserController {
         userService.deleteAccount(currentUser);
         return ResponseEntity.ok(ApiResponse.success("Tài khoản đã được xóa", null));
     }
+
+    @PostMapping("/cancel-plan")
+    @Operation(summary = "Hủy gói hiện tại",
+            description = "Đưa tài khoản về Free ngay lập tức (không hoàn tiền số ngày còn lại).")
+    public ResponseEntity<ApiResponse<UserProfileResponse>> cancelPlan(
+            @AuthenticationPrincipal User currentUser) {
+        return ResponseEntity.ok(
+                ApiResponse.success("Đã hủy gói, tài khoản trở về Free", userService.cancelPlan(currentUser)));
+    }
 }

@@ -2,6 +2,7 @@ package com.folkify.auth.dto;
 
 import com.folkify.auth.entity.User;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 public record UserDto(
@@ -9,9 +10,11 @@ public record UserDto(
         String name,
         String email,
         String role,
-        String plan
+        String plan,
+        LocalDateTime planExpiresAt
 ) {
     public static UserDto from(User user) {
-        return new UserDto(user.getId(), user.getName(), user.getEmail(), user.getRole().name(), user.getPlan().name());
+        return new UserDto(user.getId(), user.getName(), user.getEmail(),
+                user.getRole().name(), user.getPlan().name(), user.getPlanExpiresAt());
     }
 }

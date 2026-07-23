@@ -10,4 +10,7 @@ public interface UserService {
     UserProfileResponse updateProfile(User currentUser, UpdateProfileRequest request);
     void changePassword(User currentUser, ChangePasswordRequest request);
     void deleteAccount(User currentUser);
+
+    /** Hủy gói hiện tại — đưa tài khoản về FREE ngay lập tức (không hoàn tiền). */
+    UserProfileResponse cancelPlan(User currentUser);
 }

@@ -1,8 +1,10 @@
 package com.folkify.payment.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.folkify.auth.entity.Plan;
 import com.folkify.auth.entity.User;
 import com.folkify.auth.repository.UserRepository;
+import com.folkify.payment.config.PayOsProperties;
 import com.folkify.payment.entity.PaymentTransaction;
 import com.folkify.payment.entity.PaymentWebhookLog;
 import com.folkify.payment.enumType.ProcessingStatus;
@@ -34,17 +36,20 @@ public class PaymentWebhookServiceImpl implements PaymentWebhookService {
     private final UserRepository userRepository;
     private final ObjectMapper objectMapper;
     private final PayOS payOS;
+    private final PayOsProperties props;
 
     public PaymentWebhookServiceImpl(PaymentWebhookLogRepository webhookLogRepository,
                                      PaymentTransactionRepository transactionRepository,
                                      UserRepository userRepository,
                                      ObjectMapper objectMapper,
-                                     PayOS payOS) {
+                                     PayOS payOS,
+                                     PayOsProperties props) {
         this.webhookLogRepository = webhookLogRepository;
         this.transactionRepository = transactionRepository;
         this.userRepository = userRepository;
         this.objectMapper = objectMapper;
         this.payOS = payOS;
+        this.props = props;
     }
 
     @Override
@@ -116,13 +121,23 @@ public class PaymentWebhookServiceImpl implements PaymentWebhookService {
         target.setStatus(TransactionStatus.SUCCESS);
         transactionRepository.saveAndFlush(target);
 
-        // Nâng gói cho user.
+        // Nâng gói + tính hạn cho user.
         User user = target.getUser();
-        if (user != null && target.getTargetPlan() != null) {
-            user.setPlan(target.getTargetPlan());
+        Plan newPlan = target.getTargetPlan();
+        if (user != null && newPlan != null) {
+            LocalDateTime now = LocalDateTime.now();
+            LocalDateTime currentExpiry = user.getPlanExpiresAt();
+            // Mua đúng gói đang còn hạn -> gia hạn cộng dồn; ngược lại tính từ hôm nay.
+            LocalDateTime base = (user.getPlan() == newPlan
+                    && currentExpiry != null && currentExpiry.isAfter(now))
+                    ? currentExpiry : now;
+            LocalDateTime newExpiry = base.plusDays(props.getPlanDurationDays());
+
+            user.setPlan(newPlan);
+            user.setPlanExpiresAt(newExpiry);
             userRepository.save(user);
-            log.info("Đã nâng cấp user [{}] lên gói {} | orderCode: {}",
-                    user.getId(), target.getTargetPlan(), orderCode);
+            log.info("Đã kích hoạt gói {} cho user [{}] đến {} | orderCode: {}",
+                    newPlan, user.getId(), newExpiry, orderCode);
         } else {
             log.error("Giao dịch [{}] thiếu user/targetPlan, không thể nâng gói.", orderCode);
         }

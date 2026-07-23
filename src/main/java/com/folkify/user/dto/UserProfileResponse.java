@@ -11,6 +11,7 @@ public record UserProfileResponse(
         String email,
         String role,
         String plan,
+        LocalDateTime planExpiresAt,
         LocalDateTime createdAt
 ) {
     public static UserProfileResponse from(User user) {
@@ -20,6 +21,7 @@ public record UserProfileResponse(
                 user.getEmail(),
                 user.getRole().name(),
                 user.getPlan().name(),
+                user.getPlanExpiresAt(),
                 user.getCreatedAt()
         );
     }

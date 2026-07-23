@@ -27,6 +27,9 @@ public class PayOsProperties {
     /** Bảng giá theo gói (VND). Ví dụ: BASIC=49000, PRO=99000. */
     private Map<Plan, Long> planPrices = new EnumMap<>(Plan.class);
 
+    /** Số ngày hiệu lực mỗi lần mua/gia hạn gói. */
+    private int planDurationDays = 30;
+
     public String getClientId() { return clientId; }
     public void setClientId(String clientId) { this.clientId = clientId; }
     public String getApiKey() { return apiKey; }
@@ -39,4 +42,6 @@ public class PayOsProperties {
     public void setCancelUrl(String cancelUrl) { this.cancelUrl = cancelUrl; }
     public Map<Plan, Long> getPlanPrices() { return planPrices; }
     public void setPlanPrices(Map<Plan, Long> planPrices) { this.planPrices = planPrices; }
+    public int getPlanDurationDays() { return planDurationDays; }
+    public void setPlanDurationDays(int planDurationDays) { this.planDurationDays = planDurationDays; }
 }

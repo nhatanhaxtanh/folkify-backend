@@ -1,5 +1,6 @@
 package com.folkify.user.service.impl;
 
+import com.folkify.auth.entity.Plan;
 import com.folkify.auth.entity.User;
 import com.folkify.auth.repository.RefreshTokenRepository;
 import com.folkify.auth.repository.UserRepository;
@@ -61,5 +62,17 @@ public class UserServiceImpl implements UserService {
     public void deleteAccount(User currentUser) {
         refreshTokenRepository.deleteAllByUser(currentUser);
         userRepository.delete(currentUser);
+    }
+
+    @Override
+    @Transactional
+    public UserProfileResponse cancelPlan(User currentUser) {
+        if (currentUser.getPlan() == Plan.FREE) {
+            throw new ApiException(ErrorCode.INVALID_PLAN, "Bạn đang dùng gói Free, không có gì để hủy");
+        }
+        currentUser.setPlan(Plan.FREE);
+        currentUser.setPlanExpiresAt(null);
+        userRepository.save(currentUser);
+        return UserProfileResponse.from(currentUser);
     }
 }

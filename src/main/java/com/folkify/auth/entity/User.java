@@ -6,6 +6,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 
@@ -29,6 +30,10 @@ public class User extends BaseEntity implements UserDetails {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Plan plan = Plan.FREE;
+
+    /** Ngày hết hạn gói trả phí. NULL = không giới hạn (gói cũ / tài khoản FREE). */
+    @Column(name = "plan_expires_at")
+    private LocalDateTime planExpiresAt;
 
     @Column(name = "apple_sub", unique = true)
     private String appleSub;
@@ -67,12 +72,14 @@ public class User extends BaseEntity implements UserDetails {
     public String getEmail() { return email; }
     public Role getRole() { return role; }
     public Plan getPlan() { return plan; }
+    public LocalDateTime getPlanExpiresAt() { return planExpiresAt; }
     public String getAppleSub() { return appleSub; }
 
     public void setName(String name) { this.name = name; }
     public void setPassword(String password) { this.password = password; }
     public void setRole(Role role) { this.role = role; }
     public void setPlan(Plan plan) { this.plan = plan; }
+    public void setPlanExpiresAt(LocalDateTime planExpiresAt) { this.planExpiresAt = planExpiresAt; }
     public void setAppleSub(String appleSub) { this.appleSub = appleSub; }
 
     @Override public String getUsername() { return email; }

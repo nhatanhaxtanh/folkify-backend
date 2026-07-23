@@ -50,6 +50,7 @@ payos:
   checksum-key: ${PAYOS_CHECKSUM_KEY:}
   return-url: ${PAYOS_RETURN_URL:http://localhost:8080/api/payments/result}
   cancel-url: ${PAYOS_CANCEL_URL:http://localhost:8080/api/payments/result}
+  plan-duration-days: ${PAYOS_PLAN_DURATION_DAYS:30}
   plan-prices:
     BASIC: ${PAYOS_PRICE_BASIC:49000}
     PRO: ${PAYOS_PRICE_PRO:99000}

@@ -54,9 +54,7 @@ public class CheckoutServiceImpl implements CheckoutService {
                     "Chưa cấu hình giá cho gói " + targetPlan);
         }
 
-        if (currentUser.getPlan() == targetPlan) {
-            throw new ApiException(ErrorCode.ALREADY_ON_PLAN, "Bạn đang sử dụng gói này rồi");
-        }
+        // Cho phép mua lại đúng gói đang dùng để GIA HẠN (cộng dồn thời hạn ở bước webhook).
 
         // orderCode: PayOS yêu cầu số nguyên dương, duy nhất theo merchant — dùng để đối soát webhook.
         long orderCode = generateOrderCode();
