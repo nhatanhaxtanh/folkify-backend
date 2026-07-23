@@ -42,21 +42,7 @@ public class AdminController {
         return ResponseEntity.ok(ApiResponse.success(adminService.getAllUsers()));
     }
 
-    @PatchMapping("/users/{id}/plan")
-    @Operation(summary = "Đổi gói của người dùng")
-    public ResponseEntity<ApiResponse<AdminUserResponse>> updatePlan(
-            @PathVariable UUID id,
-            @Valid @RequestBody UpdatePlanRequest request) {
-        return ResponseEntity.ok(ApiResponse.success("Cập nhật gói thành công", adminService.updateUserPlan(id, request.plan())));
-    }
-
-    @PatchMapping("/users/{id}/role")
-    @Operation(summary = "Đổi role của người dùng")
-    public ResponseEntity<ApiResponse<AdminUserResponse>> updateRole(
-            @PathVariable UUID id,
-            @Valid @RequestBody UpdateRoleRequest request) {
-        return ResponseEntity.ok(ApiResponse.success("Cập nhật role thành công", adminService.updateUserRole(id, request.role())));
-    }
+    // Gói và role chỉ theo dõi trên trang admin — không cung cấp API cập nhật.
 
     @DeleteMapping("/users/{id}")
     @Operation(summary = "Xóa người dùng")

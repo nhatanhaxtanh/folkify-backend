@@ -1,8 +1,6 @@
 package com.folkify.admin.service;
 
 import com.folkify.admin.dto.*;
-import com.folkify.auth.entity.Plan;
-import com.folkify.auth.entity.Role;
 import com.folkify.blog.dto.BlogPostRequest;
 import com.folkify.blog.dto.BlogPostResponse;
 
@@ -10,11 +8,9 @@ import java.util.List;
 import java.util.UUID;
 
 public interface AdminService {
-    // Users
+    // Users (gói & role chỉ theo dõi — không cho cập nhật)
     AdminStatsResponse getStats();
     List<AdminUserResponse> getAllUsers();
-    AdminUserResponse updateUserPlan(UUID userId, Plan plan);
-    AdminUserResponse updateUserRole(UUID userId, Role role);
     void deleteUser(UUID userId);
 
     // Instruments

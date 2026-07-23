@@ -82,24 +82,6 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     @Transactional
-    public AdminUserResponse updateUserPlan(UUID userId, Plan plan) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ApiException(ErrorCode.USER_NOT_FOUND));
-        user.setPlan(plan);
-        return AdminUserResponse.from(userRepository.save(user));
-    }
-
-    @Override
-    @Transactional
-    public AdminUserResponse updateUserRole(UUID userId, Role role) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ApiException(ErrorCode.USER_NOT_FOUND));
-        user.setRole(role);
-        return AdminUserResponse.from(userRepository.save(user));
-    }
-
-    @Override
-    @Transactional
     public void deleteUser(UUID userId) {
         if (!userRepository.existsById(userId)) {
             throw new ApiException(ErrorCode.USER_NOT_FOUND);
