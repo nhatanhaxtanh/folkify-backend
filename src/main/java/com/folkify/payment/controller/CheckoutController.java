@@ -22,7 +22,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/payments")
-@Tag(name = "Payment Checkout", description = "Nâng cấp gói qua cổng thanh toán Pay2S")
+@Tag(name = "Payment Checkout", description = "Nâng cấp gói qua cổng thanh toán PayOS")
 @SecurityRequirement(name = "Bearer Authentication")
 public class CheckoutController {
 
@@ -33,7 +33,7 @@ public class CheckoutController {
     }
 
     @PostMapping("/checkout")
-    @Operation(summary = "Tạo link thanh toán Pay2S để nâng cấp gói",
+    @Operation(summary = "Tạo link thanh toán PayOS để nâng cấp gói",
             description = "App gửi gói muốn mua (BASIC/PRO). Trả về payUrl để mở WebView cho user quét QR, "
                     + "kèm orderId để poll trạng thái.")
     public ResponseEntity<ApiResponse<CheckoutResponse>> checkout(
@@ -53,8 +53,8 @@ public class CheckoutController {
     }
 
     @GetMapping("/result")
-    @Operation(summary = "Redirect sau khi thanh toán (Pay2S gọi)",
-            description = "Chuyển hướng về deep link của app Folkify kèm các tham số Pay2S trả về.")
+    @Operation(summary = "Redirect sau khi thanh toán (PayOS gọi)",
+            description = "Chuyển hướng về deep link của app Folkify kèm các tham số PayOS trả về.")
     public ResponseEntity<Void> paymentResult(@RequestParam Map<String, String> params) {
         UriComponentsBuilder deepLink = UriComponentsBuilder.newInstance()
                 .uri(URI.create("folkify://payment/result"));

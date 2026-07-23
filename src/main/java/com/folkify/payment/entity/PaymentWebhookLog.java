@@ -9,7 +9,7 @@ import jakarta.persistence.*;
 public class PaymentWebhookLog extends BaseEntity {
 
     @Column(length = 50)
-    private String gateway; // "PAY2S"
+    private String gateway; // "PAYOS"
 
     @Column(name = "raw_payload", columnDefinition = "text", nullable = false)
     private String rawPayload;

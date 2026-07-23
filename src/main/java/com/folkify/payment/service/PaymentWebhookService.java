@@ -2,6 +2,6 @@ package com.folkify.payment.service;
 
 public interface PaymentWebhookService {
 
-    /** Xử lý webhook biến động số dư từ Pay2S. */
-    void processPay2sWebhook(String rawPayload, String clientIp, String authorization);
+    /** Xử lý webhook xác nhận thanh toán từ PayOS (đã kèm chữ ký trong payload). */
+    void processPayosWebhook(Object body, String clientIp);
 }

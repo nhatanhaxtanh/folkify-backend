@@ -21,8 +21,8 @@ public interface PaymentTransactionRepository extends JpaRepository<PaymentTrans
 
     /** Khóa dòng (SELECT ... FOR UPDATE) để chặn webhook trùng xử lý song song. */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("SELECT t FROM PaymentTransaction t WHERE t.transferContent = :content")
-    Optional<PaymentTransaction> findByTransferContentForUpdate(@Param("content") String content);
+    @Query("SELECT t FROM PaymentTransaction t WHERE t.gatewayReferenceId = :orderCode")
+    Optional<PaymentTransaction> findByGatewayReferenceIdForUpdate(@Param("orderCode") String orderCode);
 
     List<PaymentTransaction> findByStatusAndCreatedAtBefore(
             TransactionStatus status, LocalDateTime time);
