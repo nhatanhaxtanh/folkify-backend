@@ -11,6 +11,8 @@ public record AdminUserResponse(
         String email,
         String role,
         String plan,
+        /** Ngày hết hạn gói trả phí. NULL = không giới hạn (gói cũ / tài khoản FREE). */
+        LocalDateTime planExpiresAt,
         LocalDateTime createdAt
 ) {
     public static AdminUserResponse from(User user) {
@@ -20,6 +22,7 @@ public record AdminUserResponse(
                 user.getEmail(),
                 user.getRole().name(),
                 user.getPlan().name(),
+                user.getPlanExpiresAt(),
                 user.getCreatedAt()
         );
     }
