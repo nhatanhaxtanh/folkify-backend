@@ -26,4 +26,20 @@ public interface PaymentTransactionRepository extends JpaRepository<PaymentTrans
 
     List<PaymentTransaction> findByStatusAndCreatedAtBefore(
             TransactionStatus status, LocalDateTime time);
+
+    /**
+     * Ngày mua gói gần nhất của từng user. Chỉ tính giao dịch đã thành công —
+     * user được tặng gói tay (không qua thanh toán) sẽ không có mặt trong kết quả.
+     */
+    @Query("SELECT t.user.id AS userId, MAX(t.transactionDate) AS lastPurchaseAt " +
+            "FROM PaymentTransaction t " +
+            "WHERE t.status = :status " +
+            "GROUP BY t.user.id")
+    List<LastPurchaseView> findLastPurchaseDatePerUser(@Param("status") TransactionStatus status);
+
+    /** Projection cho {@link #findLastPurchaseDatePerUser}. */
+    interface LastPurchaseView {
+        UUID getUserId();
+        LocalDateTime getLastPurchaseAt();
+    }
 }

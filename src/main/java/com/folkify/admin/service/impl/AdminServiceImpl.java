@@ -18,6 +18,8 @@ import com.folkify.instrument.entity.Song;
 import com.folkify.instrument.repository.InstrumentRepository;
 import com.folkify.instrument.repository.LessonRepository;
 import com.folkify.instrument.repository.SongRepository;
+import com.folkify.payment.enumType.TransactionStatus;
+import com.folkify.payment.repository.PaymentTransactionRepository;
 import com.folkify.sheet.entity.SheetMusic;
 import com.folkify.sheet.repository.SheetMusicRepository;
 import org.springframework.stereotype.Service;
@@ -25,7 +27,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class AdminServiceImpl implements AdminService {
@@ -36,19 +40,22 @@ public class AdminServiceImpl implements AdminService {
     private final SongRepository songRepository;
     private final SheetMusicRepository sheetMusicRepository;
     private final BlogPostRepository blogPostRepository;
+    private final PaymentTransactionRepository paymentTransactionRepository;
 
     public AdminServiceImpl(UserRepository userRepository,
                             InstrumentRepository instrumentRepository,
                             LessonRepository lessonRepository,
                             SongRepository songRepository,
                             SheetMusicRepository sheetMusicRepository,
-                            BlogPostRepository blogPostRepository) {
+                            BlogPostRepository blogPostRepository,
+                            PaymentTransactionRepository paymentTransactionRepository) {
         this.userRepository = userRepository;
         this.instrumentRepository = instrumentRepository;
         this.lessonRepository = lessonRepository;
         this.songRepository = songRepository;
         this.sheetMusicRepository = sheetMusicRepository;
         this.blogPostRepository = blogPostRepository;
+        this.paymentTransactionRepository = paymentTransactionRepository;
     }
 
     // ── Users ──────────────────────────────────────────────────────────────
@@ -70,13 +77,21 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     public List<AdminUserResponse> getAllUsers() {
+        // Một query gộp cho toàn bộ user, tránh N+1 khi map từng dòng.
+        Map<UUID, LocalDateTime> lastPurchaseByUser =
+                paymentTransactionRepository.findLastPurchaseDatePerUser(TransactionStatus.SUCCESS)
+                        .stream()
+                        .collect(Collectors.toMap(
+                                PaymentTransactionRepository.LastPurchaseView::getUserId,
+                                PaymentTransactionRepository.LastPurchaseView::getLastPurchaseAt));
+
         return userRepository.findAll().stream()
                 .sorted((a, b) -> {
                     if (a.getCreatedAt() == null) return 1;
                     if (b.getCreatedAt() == null) return -1;
                     return b.getCreatedAt().compareTo(a.getCreatedAt());
                 })
-                .map(AdminUserResponse::from)
+                .map(user -> AdminUserResponse.from(user, lastPurchaseByUser.get(user.getId())))
                 .toList();
     }
 
