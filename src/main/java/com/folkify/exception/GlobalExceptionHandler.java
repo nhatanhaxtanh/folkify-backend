@@ -6,6 +6,7 @@ import com.folkify.common.response.ApiResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -36,6 +37,17 @@ public class GlobalExceptionHandler {
             errors.put(field, error.getDefaultMessage());
         });
         return ResponseEntity.badRequest().body(ApiResponse.validationError(errors));
+    }
+
+    /**
+     * @PreAuthorize ném AuthorizationDeniedException (con của AccessDeniedException) ngay tại
+     * controller nên DispatcherServlet xử lý trước ExceptionTranslationFilter. Không bắt riêng ở
+     * đây thì nó rơi vào handleGeneric và trả 500 thay vì 403.
+     */
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ApiResponse<Void>> handleAccessDenied(AccessDeniedException ex) {
+        return ResponseEntity.status(ErrorCode.FORBIDDEN.getStatus())
+                .body(ApiResponse.error(ErrorCode.FORBIDDEN));
     }
 
     @ExceptionHandler(Exception.class)

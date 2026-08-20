@@ -37,6 +37,7 @@ public enum ErrorCode {
     // General (4000+)
     VALIDATION_ERROR(4000, "Dữ liệu không hợp lệ", HttpStatus.BAD_REQUEST),
     RESOURCE_NOT_FOUND(4004, "Không tìm thấy tài nguyên", HttpStatus.NOT_FOUND),
+    UNAUTHORIZED(4001, "Vui lòng đăng nhập để tiếp tục", HttpStatus.UNAUTHORIZED),
     FORBIDDEN(4003, "Không có quyền truy cập", HttpStatus.FORBIDDEN),
 
     // Server (5000+)
